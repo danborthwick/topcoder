@@ -2,20 +2,26 @@ public class ANDEquation {
 
     public static int restoreY(int[] A)
     {
-        for (int i=0; i < A.length; i++)
-        {
-            int result = Integer.MAX_VALUE;
+        int min = A[0];
+        int minIndex = 0;
 
-            for (int j=0; j < A.length; j++)
+        for (int i = 1; i < A.length; i++) {
+            if (A[i] < min)
             {
-                if (i == j) continue;
-
-                result &= A[j];
+                minIndex = i;
+                min = A[i];
             }
-
-            if (result == A[i]) return A[i];
         }
 
-        return -1;
+        int result = Integer.MAX_VALUE;
+
+        for (int j=0; j < A.length; j++)
+        {
+            if (minIndex == j) continue;
+
+            result &= A[j];
+        }
+
+        return (result == min) ? min : -1;
     }
 }
