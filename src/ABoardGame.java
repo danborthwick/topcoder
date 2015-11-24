@@ -21,7 +21,7 @@ public class ABoardGame {
                 update(input, counts, i, last);
             }
             // Left, right
-            for (int j=first; j <= last; j++) {
+            for (int j=first + 1; j < last; j++) {
                 update(input, counts, first, j);
                 update(input, counts, last, j);
             }
