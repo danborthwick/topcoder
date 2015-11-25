@@ -1,6 +1,22 @@
+import static java.lang.Math.*;
+
 public class Airways {
-    public static double distance(int n, int east, int north) {
-        return 0;
+    public static double distance(int n, int east, int north)
+    {
+        double alpha = 2.0 * PI / n;
+        double theta = atan2(north, east);
+        double alphaBelow = floor(theta / alpha) * alpha;
+        double alphaAbove = alphaBelow + alpha;
+
+        double aA = alphaAbove - theta;
+        double aB = theta - alphaBelow;
+        double aD = PI - aA - aB;
+
+        double d = sqrt((east * east) + (north * north));
+        double a = d * sin(aA) / sin(aD);
+        double b = d * sin(aB) / sin(aD);
+
+        return a + b;
     }
 
     /**
