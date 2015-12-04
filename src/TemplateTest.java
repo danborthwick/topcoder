@@ -11,20 +11,19 @@ import static org.junit.Assert.assertThat;
 @RunWith(Parameterized.class)
 public class TemplateTest {
 
+    private final String input;
+    private final String expected;
+
+    public TemplateTest(String input, String expected) {
+        this.input = input;
+        this.expected = expected;
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"Input", "Expected"},
         });
-    }
-
-    private final String expected;
-    private final String input;
-
-    public TemplateTest(String input, String expected)
-    {
-        this.expected = expected;
-        this.input = input;
     }
 
     @Test
