@@ -32,6 +32,8 @@ public class Rafting {
 
                 return tSquared >= 0 ? Math.sqrt(tSquared) : Double.MAX_VALUE;
             }
+
+            return Double.MAX_VALUE;
         }
     }
 }
