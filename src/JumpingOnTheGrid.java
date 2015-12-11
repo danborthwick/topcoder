@@ -9,15 +9,16 @@ public class JumpingOnTheGrid {
 
         private final long[][] maxE;
         private final String[] grid;
-        private final int E;
-        private final int T;
+        private final int width, height;
+        private final int maxSteps;
 
-        public Dynamic(final String[] grid, final int E, final int T) {
+        public Dynamic(final String[] grid, final int E, final int maxSteps) {
             this.grid = grid;
-            this.E = E;
-            this.T = T;
+            this.width = grid[0].length();
+            this.height = grid.length;
+            this.maxSteps = maxSteps;
 
-            maxE = new long[T + 1][grid.length * grid.length];
+            maxE = new long[maxSteps + 1][width * height];
             for (long[] longs : maxE) {
                 Arrays.fill(longs, -1);
             }
@@ -25,10 +26,10 @@ public class JumpingOnTheGrid {
             maxE[0][indexOf(START)] = E;
         }
 
-        public void compute() {
-            for (int t = 0; t < T; t++) {
-                for (int y = 0; y < grid.length; y++) {
-                    for (int x = 0; x < grid.length; x++) {
+        public void compute(int prefixSteps) {
+            for (int t = 0; t < maxSteps; t++) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
 
                         long eFrom = getMaxE(t, x, y);
                         if (eFrom >= 0) {
@@ -62,8 +63,8 @@ public class JumpingOnTheGrid {
             }
         }
 
-        public long result() {
-            return maxE[T][indexOf(END)];
+        public long result(int steps) {
+            return maxE[steps][indexOf(END)];
         }
 
         private void step(int tTo, int xFrom, int yFrom, int dx, int dy, long eFrom) {
@@ -74,22 +75,37 @@ public class JumpingOnTheGrid {
                 int dist = Math.abs(yTo - yFrom) + Math.abs(xTo - xFrom);
                 long eTo = eFrom - (dist * dist);
 
-                if (eTo > getMaxE(tTo, xTo, yTo)) {
-                    setMaxE(tTo, xTo, yTo, eTo);
+                setMaxE(tTo, xTo, yTo, eTo);
+            }
+        }
+
+        public void computeWait(int prefixSteps, int waitSteps) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    long eFrom = getMaxE(prefixSteps, x, y);
+
+                    long eTo = (eFrom >= 0) ? eFrom + energyIncreaseAt(x, y) * waitSteps : eFrom;
+                    setMaxE(0, x, y, eTo);
                 }
+            }
+
+            // Reset subsequent t's
+            for (int t = 1; t < maxE.length; t++) {
+                Arrays.fill(maxE[t], -1);
             }
         }
 
         private void setMaxE(int t, int x, int y, long e) {
-            maxE[t][y * grid.length + x] = e;
+            if (e > maxE[t][y * width + x])
+                maxE[t][y * width + x] = e;
         }
 
         private long getMaxE(int t, int x, int y) {
-            return maxE[t][y * grid.length + x];
+            return maxE[t][y * width + x];
         }
 
         private boolean validCell(int x, int y) {
-            return x >= 0 && x < grid.length && y >= 0 && y < grid.length;
+            return x >= 0 && x < width && y >= 0 && y < height;
         }
 
         private boolean canLandOn(int x, int y) {
@@ -97,10 +113,10 @@ public class JumpingOnTheGrid {
         }
 
         private int indexOf(char c) {
-            for (int y=0; y < grid.length; y++) {
+            for (int y=0; y < height; y++) {
                 int x = grid[y].indexOf(c);
                 if (x >= 0) {
-                    return (y * grid.length) + x;
+                    return (y * width) + x;
                 }
             }
             return -1;
@@ -110,13 +126,26 @@ public class JumpingOnTheGrid {
 
     public static long maxEnergy(final String[] grid, final int E, final int T) {
 
-        // TODO: Handle large T
-        if (T > 1000) return -1;
+        final int numCells = grid.length * grid[0].length();
 
-        Dynamic dynamic = new Dynamic(grid, E, T);
-        dynamic.compute();
+        final int prefixSteps = Math.min(3 * numCells + 61, T);
+        final int waitSteps = T - (4 * numCells) - 61;
+        final int suffixSteps = numCells;
+        long result;
 
-        return dynamic.result();
+        Dynamic dynamic = new Dynamic(grid, E, Math.max(prefixSteps, suffixSteps));
+        dynamic.compute(prefixSteps);
+
+        if (waitSteps > 0) {
+            dynamic.computeWait(prefixSteps, waitSteps);
+            dynamic.compute(suffixSteps);
+            result = dynamic.result(suffixSteps);
+        }
+        else {
+            result = dynamic.result(prefixSteps);
+        }
+
+        return result;
     }
 
 }
